@@ -1,9 +1,11 @@
 /// <reference path='../typings/tsd.d.ts' />
 
+var mongodb = require('mongodb');
+
 import express = require('express');
 var router = express.Router();
 
-/* GET locations. */
+/* GET get. */
 router.get('/get/location', function(req, res, next) {
     var cursor = req.db.collection('locations').find();
     var result = [];
@@ -26,7 +28,7 @@ router.get('/get/location', function(req, res, next) {
       });
 });
 
-/* POST locations. */
+/* POST insert. */
 router.post('/insert/location', function(req, res, next) {
     if(!req.body.name || req.body.name.length == 0) {
         throw new Error('A name must be specified');
@@ -40,8 +42,23 @@ router.post('/insert/location', function(req, res, next) {
 
     req.db.collection('locations').insertOne(req.body, (err, result) => {
         res.send({
-            error: (err == null),
-            reason: (err == null) ? undefined : err,
+            error: (err != null),
+            reason: (err != null) ? err : undefined,
+            result: (err == null) ? result : undefined
+        });
+    });
+});
+
+/* POST delete. */
+router.post('/delete/location', function(req, res, next) {
+    if(!req.body.id || req.body.id.length == 0) {
+        throw new Error('A id must be specified');
+    }
+
+    req.db.collection('locations').deleteOne({ "_id": new mongodb.ObjectID(req.body.id) }, (err, result) => {
+        res.send({
+            error: (err != null),
+            reason: (err != null) ? err : undefined,
             result: (err == null) ? result : undefined
         });
     });
