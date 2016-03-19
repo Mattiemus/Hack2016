@@ -9,6 +9,7 @@ import bodyParser = require('body-parser');
 
 import routes = require('./routes/index');
 import action = require('./routes/action');
+import dev = require('./routes/dev');
 
 import hbs = require('express-hbs');
 
@@ -47,6 +48,7 @@ app.use((req, res, next) => {
 // Add page routes
 app.use('/', routes);
 app.use('/action', action);
+app.use('/dev', dev);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
