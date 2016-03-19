@@ -1,6 +1,7 @@
 /// <reference path='../typings/tsd.d.ts' />
 
 var mongodb = require('mongodb');
+var url = require('url');
 
 import express = require('express');
 var router = express.Router();
@@ -12,11 +13,25 @@ function createRouter(collectionName, fields) {
     router.post('/insert/' + collectionName, function(req, res, next) {
         // Error if one of the required fields isnt set
         for(var fieldName in fields) {
-            if(!req.body[fieldName] || req.body[fieldName].length != 0) {
+            if(!req.body[fieldName] || req.body[fieldName].length == 0) {
                 res.send({
                     error: true,
                     reason: 'The field "' + fieldName + '" must be specified'
                 });
+                return;
+            }
+
+            if(fields[fieldName].isArray) {
+                req.body[fieldName] = req.body[fieldName].split(';');
+                if(fields[fieldName].refToo) {
+                    for(var i = 0; i < req.body[fieldName].length; i++) {
+                        req.body[fieldName][i] = new mongodb.DBRef(fields[fieldName].refToo,
+                            new mongodb.ObjectId(req.body[fieldName][i]));
+                    }
+                }
+            } else if(fields[fieldName].refToo) {
+                req.body[fieldName] = new mongodb.DBRef(fields[fieldName].refToo,
+                  new mongodb.ObjectId(req.body[fieldName]));
             }
         }
 
@@ -32,9 +47,18 @@ function createRouter(collectionName, fields) {
 
     /* GET - Read */
     router.get('/get/' + collectionName, function(req, res, next) {
+        // Build a query from the request
+        var query = url.parse(req.url, true).query;
+        for (var fieldName in query) {
+            if(fieldName == '_id') {
+                query[fieldName] = new mongodb.ObjectId(query[fieldName]);
+            }
+        }
+
         // Get everything that satisfies the request
-        var cursor = req.db.collection(collectionName).find();
+        var cursor = (query == {}) ? req.db.collection(collectionName).find() : req.db.collection(collectionName).find(query);
         var result = [];
+        var recordsGrabbingRefs = 0;
 
         // Iterate over each result
         cursor.each((err, doc) => {
@@ -48,7 +72,32 @@ function createRouter(collectionName, fields) {
                 if (doc != null) {
                     // Add the resulting document
                     result.push(doc);
-                } else {
+
+                    // Grab references
+                    for(var fieldName in fields) {
+                        if(fields[fieldName].refToo) {
+                            // Query for the referenced field
+                            recordsGrabbingRefs++;
+                            var cursor = req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(doc[fieldName].oid) });
+                            var fieldNameCpy = fieldName;
+                            cursor.each((err, refDoc) => {
+                                // Set the referenced value
+                                if(refDoc != null) {
+                                    doc[fieldNameCpy] = refDoc;
+                                }
+
+                                // If we have all the fields, send the response!
+                                recordsGrabbingRefs--;
+                                if (recordsGrabbingRefs == 0) {
+                                    res.send({
+                                        error: false,
+                                        result: result
+                                    });
+                                }
+                            });
+                        }
+                    }
+                } else if (recordsGrabbingRefs == 0) {
                     // Last document - send the results
                     res.send({
                         error: false,
@@ -99,6 +148,11 @@ function createRouter(collectionName, fields) {
                     for(var fieldName in fields) {
                         if(!req.body[fieldName] || req.body[fieldName].length == 0) {
                             req.body[fieldName] = doc[fieldName];
+                        }
+
+                        if(fields[fieldName].refToo) {
+                            req.body[fieldName] = new mongodb.DBRef(fields[fieldName].refToo,
+                              new mongodb.ObjectId(req.body[fieldName]));
                         }
                     }
 
@@ -162,6 +216,29 @@ createRouter('locations', {
     name: {},
     longitude: {},
     latitude: {}
+});
+
+// Departments router
+createRouter('departments', {
+    name: {}
+});
+
+// Skills router
+createRouter('skills', {
+    name: {},
+    category: {}
+});
+
+// People router
+createRouter('people', {
+    firstname: {},
+    lastname: {},
+    department: { refToo: 'departments' },
+    skills: { refToo: 'skills', isArray: true }
+    happyness: {},
+    workload: {},
+    likes: { isArray: true },
+    dislikes: { isArray: true }
 });
 
 export = router;
