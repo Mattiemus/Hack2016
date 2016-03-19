@@ -30,7 +30,6 @@ router.get('/edit', function(req, res, next) {
                 name: 'skills',
                 fields: [
                     { name: 'name' },
-                    { name: 'proficiency' },
                     { name: 'category' }
                 ]
             },
@@ -40,10 +39,11 @@ router.get('/edit', function(req, res, next) {
                     { name: 'firstname' },
                     { name: 'lastname' },
                     { name: 'department' },
+                    { name: 'skills', isArray: true },
                     { name: 'happyness' },
                     { name: 'workload' },
-                    { name: 'likes' },
-                    { name: 'dislikes' }
+                    { name: 'likes', isArray: true },
+                    { name: 'dislikes', isArray: true }
                 ]
             }
         ]

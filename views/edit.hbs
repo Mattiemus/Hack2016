@@ -33,7 +33,13 @@
               {{#each this.fields}}
                 <tr>
                   <td><label for="{{this.name}}">{{this.name}}</label></td>
-                  <td><input type="text" name="{{this.name}}" id="{{this.name}}"></td>
+                  <td>
+                    {{#if this.isArray}}
+                      <textarea name="{{this.name}}" id="{{this.name}}" cols="40" rows="5" placeholder="Values seperated by ;"></textarea>
+                    {{else}}
+                      <input type="text" name="{{this.name}}" id="{{this.name}}">
+                    {{/if}}
+                  </td>
                 </tr>
               {{/each}}
               <tr>
@@ -67,7 +73,13 @@
               {{#each this.fields}}
                 <tr>
                   <td><label for="{{this.name}}">{{this.name}}</label></td>
-                  <td><input type="text" name="{{this.name}}" id="{{this.name}}"></td>
+                  <td>
+                    {{#if this.isArray}}
+                      <textarea name="{{this.name}}" id="{{this.name}}" cols="40" rows="5" placeholder="Values seperated by ;"></textarea>
+                    {{else}}
+                      <input type="text" name="{{this.name}}" id="{{this.name}}">
+                    {{/if}}
+                  </td>
                 </tr>
               {{/each}}
               <tr>

@@ -1,6 +1,7 @@
 /// <reference path='../typings/tsd.d.ts' />
 
 var mongodb = require('mongodb');
+var url = require('url');
 
 import express = require('express');
 var router = express.Router();
@@ -20,7 +21,15 @@ function createRouter(collectionName, fields) {
                 return;
             }
 
-            if(fields[fieldName].refToo) {
+            if(fields[fieldName].isArray) {
+                req.body[fieldName] = req.body[fieldName].split(';');
+                if(fields[fieldName].refToo) {
+                    for(var i = 0; i < req.body[fieldName].length; i++) {
+                        req.body[fieldName][i] = new mongodb.DBRef(fields[fieldName].refToo,
+                            new mongodb.ObjectId(req.body[fieldName][i]));
+                    }
+                }
+            } else if(fields[fieldName].refToo) {
                 req.body[fieldName] = new mongodb.DBRef(fields[fieldName].refToo,
                   new mongodb.ObjectId(req.body[fieldName]));
             }
@@ -38,8 +47,16 @@ function createRouter(collectionName, fields) {
 
     /* GET - Read */
     router.get('/get/' + collectionName, function(req, res, next) {
+        // Build a query from the request
+        var query = url.parse(req.url, true).query;
+        for (var fieldName in query) {
+            if(fieldName == '_id') {
+                query[fieldName] = new mongodb.ObjectId(query[fieldName]);
+            }
+        }
+
         // Get everything that satisfies the request
-        var cursor = req.db.collection(collectionName).find();
+        var cursor = (query == {}) ? req.db.collection(collectionName).find() : req.db.collection(collectionName).find(query);
         var result = [];
         var recordsGrabbingRefs = 0;
 
@@ -209,7 +226,6 @@ createRouter('departments', {
 // Skills router
 createRouter('skills', {
     name: {},
-    proficiency: {},
     category: {}
 });
 
@@ -218,10 +234,11 @@ createRouter('people', {
     firstname: {},
     lastname: {},
     department: { refToo: 'departments' },
+    skills: { refToo: 'skills', isArray: true }
     happyness: {},
     workload: {},
-    likes: {},
-    dislikes: {}
+    likes: { isArray: true },
+    dislikes: { isArray: true }
 });
 
 export = router;
