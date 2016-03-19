@@ -39,13 +39,18 @@
 
 <body>
 
-
-
-	<!--<h1>{{title}}</h1>
-	<p>Welcome to {{title}}</p>-->
-
     <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">
         <div data-bind="visible: viewMap()" id="mapid"></div>
+        <div data-bind="visible: viewMap() == false" id="locationData">
+            <h1 data-bind="text: viewLocationName" style="font-size: 40px"></h1>
+            <hr />
+            <h3 data-bind="" style="font-size: 23px">Head of Office - Paula Besson</h3>
+            <h3 data-bind="text: viewLocationEmployeesNo() + ' Employees'" style="font-size: 23px"></h3>
+
+            <br />
+
+            <canvas id="myChart" width="400" height="400"></canvas>
+        </div>
     </div>
 
     <div data-bind="visible: (displaySection() == 'skills')" id="skillsContainer">skills</div>

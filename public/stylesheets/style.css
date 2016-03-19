@@ -59,3 +59,18 @@ a {
 .fa {
     color: #ffffff;
 }
+
+#locationData {
+    padding: 25px 50px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #525252;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 3px solid #7768AE !important;
+    margin: 1em 0;
+    padding: 0; 
+}
