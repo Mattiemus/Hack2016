@@ -258,6 +258,38 @@ function createRouter(collectionName, fields) {
     });
 }
 
+// Query location employee count
+router.get('/query/employeecount', function(req, res, next) {
+    // Build a query from the request
+    var locationId = url.parse(req.url, true).query.locationId;
+    if (locationId == undefined) {
+        res.send({
+            error: true,
+            reason: 'locationId parameter must be set'
+        });
+        return;
+    } else {
+        locationId = new mongodb.ObjectId(locationId);
+    }
+
+    // Ask how many employees there are
+    req.db.collection('people').find({ 'location.$id' : locationId }).count((err, result) => {
+        if (err != null) {
+            // An error occured
+            res.send({
+                error: true,
+                reason: err
+            });
+        } else {
+            // Return result
+            res.send({
+                error: false,
+                result: result
+            });
+        }
+    });
+});
+
 // Locations router
 createRouter('locations', {
     name: {},
@@ -281,8 +313,9 @@ createRouter('people', {
     firstname: {},
     lastname: {},
     department: { refToo: 'departments' },
+    location: { refToo: 'locations' },
     skills: { refToo: 'skills', isArray: true }
-    happyness: {},
+    happiness: {},
     workload: {},
     likes: { isArray: true },
     dislikes: { isArray: true }

@@ -39,8 +39,9 @@ router.get('/edit', function(req, res, next) {
                     { name: 'firstname' },
                     { name: 'lastname' },
                     { name: 'department' },
+                    { name: 'location' },
                     { name: 'skills', isArray: true },
-                    { name: 'happyness' },
+                    { name: 'happiness' },
                     { name: 'workload' },
                     { name: 'likes', isArray: true },
                     { name: 'dislikes', isArray: true }
