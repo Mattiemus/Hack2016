@@ -27,7 +27,7 @@
         <h1>Locations</h1>
 
         <h2>Insert</h2>
-        <form action="../action/insert/location" method="post">
+        <form action="../action/insert/locations" method="post">
           <table>
             <tr>
               <td><label for="name">Name</label></td>
@@ -49,11 +49,37 @@
         </form>
 
         <h2>Delete</h2>
-        <form action="../action/delete/location" method="post">
+        <form action="../action/delete/locations" method="post">
           <table>
             <tr>
               <td><label for="name">Id</label></td>
               <td><input type="text" name="id" id="id"></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="submit" style="float:right;"></td>
+            </tr>
+          </table>
+        </form>
+
+        <h2>Update</h2>
+        <form action="../action/update/locations" method="post">
+          <table>
+            <tr>
+              <td><label for="name">Id</label></td>
+              <td><input type="text" name="id" id="id"></td>
+            </tr>
+            <tr>
+              <td><label for="name">Name</label></td>
+              <td><input type="text" name="name" id="name"></td>
+            </tr>
+            <tr>
+              <td><label for="longitude">Longitude</label></td>
+              <td><input type="text" name="longitude" id="longitude"></td>
+            </tr>
+            <tr>
+              <td><label for="latitude">Latitude</label></td>
+              <td><input type="text" name="latitude" id="latitude"></td>
             </tr>
             <tr>
               <td></td>
@@ -69,6 +95,10 @@
 
       <div class="column">
         <h1>Skills</h1>
+      </div>
+
+      <div class="column">
+        <h1>People</h1>
       </div>
     </div>
   </body>
