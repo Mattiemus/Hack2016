@@ -14,15 +14,19 @@ function createRouter(collectionName, fields) {
         // Error if one of the required fields isnt set
         for(var fieldName in fields) {
             if(!req.body[fieldName] || req.body[fieldName].length == 0) {
-                res.send({
-                    error: true,
-                    reason: 'The field "' + fieldName + '" must be specified'
-                });
-                return;
+                if (fields[fieldName].isArray) {
+                    req.body[fieldName] = '';
+                } else {
+                    res.send({
+                        error: true,
+                        reason: 'The field "' + fieldName + '" must be specified'
+                    });
+                    return;
+                }
             }
 
             if(fields[fieldName].isArray) {
-                req.body[fieldName] = req.body[fieldName].split(';');
+                req.body[fieldName] = req.body[fieldName].split(';').filter((n) => { return n != undefined && n.length != 0; });
                 if(fields[fieldName].refToo) {
                     for(var i = 0; i < req.body[fieldName].length; i++) {
                         req.body[fieldName][i] = new mongodb.DBRef(fields[fieldName].refToo,
@@ -59,6 +63,7 @@ function createRouter(collectionName, fields) {
         var cursor = (query == {}) ? req.db.collection(collectionName).find() : req.db.collection(collectionName).find(query);
         var result = [];
         var recordsGrabbingRefs = 0;
+        var hasSentOff = false;
 
         // Iterate over each result
         cursor.each((err, doc) => {
@@ -76,25 +81,51 @@ function createRouter(collectionName, fields) {
                     // Grab references
                     for(var fieldName in fields) {
                         if(fields[fieldName].refToo) {
-                            // Query for the referenced field
-                            recordsGrabbingRefs++;
-                            var cursor = req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(doc[fieldName].oid) });
-                            var fieldNameCpy = fieldName;
-                            cursor.each((err, refDoc) => {
-                                // Set the referenced value
-                                if(refDoc != null) {
-                                    doc[fieldNameCpy] = refDoc;
-                                }
+                            if(fields[fieldName].isArray) {
+                                for (var i = 0; i < doc[fieldName].length; i++) {
+                                    // Query for the referenced field
+                                    recordsGrabbingRefs++;
+                                    ((fieldNameCpy, iCpy, myCursor) => {
+                                        myCursor.each((err, refDoc) => {
+                                            // Set the referenced value
+                                            if(err == null && refDoc != null) {
+                                                recordsGrabbingRefs--;
+                                                doc[fieldNameCpy][iCpy] = refDoc;
+                                            }
 
-                                // If we have all the fields, send the response!
-                                recordsGrabbingRefs--;
-                                if (recordsGrabbingRefs == 0) {
-                                    res.send({
-                                        error: false,
-                                        result: result
-                                    });
+                                            // If we have all the fields, send the response!
+                                            if (!hasSentOff && recordsGrabbingRefs == 0) {
+                                                  hasSentOff = true;
+                                                  res.send({
+                                                      error: false,
+                                                      result: result
+                                                  });
+                                            }
+                                        });
+                                    })(fieldName, i, req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(doc[fieldName][i].oid) }));
                                 }
-                            });
+                            } else {
+                                // Query for the referenced field
+                                recordsGrabbingRefs++;
+                                ((fieldNameCpy, myCursor) => {
+                                    myCursor.each((err, refDoc) => {
+                                        // Set the referenced value
+                                        if(err == null && refDoc != null) {
+                                            recordsGrabbingRefs--;
+                                            doc[fieldNameCpy] = refDoc;
+                                        }
+
+                                        // If we have all the fields, send the response!
+                                        if (!hasSentOff && recordsGrabbingRefs == 0) {
+                                            hasSentOff = true;
+                                            res.send({
+                                                error: false,
+                                                result: result
+                                            });
+                                        }
+                                    });
+                                })(fieldName, req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(doc[fieldName].oid) }));
+                            }
                         }
                     }
                 } else if (recordsGrabbingRefs == 0) {
@@ -116,6 +147,22 @@ function createRouter(collectionName, fields) {
                 error: true,
                 reason: 'An id must be specified'
             });
+        }
+
+        // Split up array fields
+        for(var fieldName in fields) {
+            if(req.body[fieldName] && fields[fieldName].isArray) {
+                req.body[fieldName] = req.body[fieldName].split(';').filter((n) => { return n != undefined && n.length != 0; });
+                if(fields[fieldName].refToo) {
+                    for(var i = 0; i < req.body[fieldName].length; i++) {
+                        req.body[fieldName][i] = new mongodb.DBRef(fields[fieldName].refToo,
+                            new mongodb.ObjectId(req.body[fieldName][i]));
+                    }
+                }
+            } else if(req.body[fieldName] && fields[fieldName].refToo) {
+                req.body[fieldName] = new mongodb.DBRef(fields[fieldName].refToo,
+                  new mongodb.ObjectId(req.body[fieldName]));
+            }
         }
 
         // Verify the id
