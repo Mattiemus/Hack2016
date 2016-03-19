@@ -33,7 +33,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Connect MongoDB
 app.use((req, res, next) => {
-    MongoClient.connect('mongodb://localhost:27017/test', (err, db) => {
+    MongoClient.connect('mongodb://localhost:27017/personauth', (err, db) => {
         if (db == null) {
             var error = new Error('Could not connect to MongoDB');
             next(error);
