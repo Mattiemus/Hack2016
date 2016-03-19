@@ -12,37 +12,51 @@ import users = require('./routes/users');
 
 import hbs = require('express-hbs');
 
+var MongoClient = require('mongodb').MongoClient;
+
 var app = express();
 
-// view engine setup
+// View engine setup
 app.engine('hbs', hbs.express4({
-  partialsDir: path.join(__dirname, 'views')
+    partialsDir: path.join(__dirname, 'views')
 }));
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'hbs');
 
-// uncomment after placing your favicon in /public
-//app.use(favicon(__dirname + '/public/favicon.ico'));
+// Uncomment after placing your favicon in /public
+// app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Connect MongoDB
+app.use((req, res, next) => {
+    MongoClient.connect('mongodb://localhost:27017/test', (err, db) => {
+        if (db == null) {
+            var error = new Error('Could not connect to MongoDB');
+            next(error);
+        } else {
+          (<any>req).db = db;
+          next();
+        }
+    });
+});
+
+// Add page routes
 app.use('/', routes);
 app.use('/users', users);
 
-//catch 404 and forward to error handler
+// Catch 404 and forward to error handler
 app.use((req, res, next) => {
    var err = new Error('Not Found');
    err['status'] = 404;
    next(err);
 });
 
-// error handlers
-
-// development error handler
-// will print stacktrace
+// Error handlers
+// Development error handler - prints stack trace
 if (app.get('env') === 'development') {
    app.use((err: any, req, res, next) => {
        res.status(err['status'] || 500);
@@ -53,8 +67,7 @@ if (app.get('env') === 'development') {
    });
 }
 
-// production error handler
-// no stacktraces leaked to user
+// Production error handler - no stack traces
 app.use((err: any, req, res, next) => {
    res.status(err.status || 500);
    res.render('error', {
