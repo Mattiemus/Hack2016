@@ -49,6 +49,37 @@ function createRouter(collectionName, fields) {
         });
     });
 
+    /* GET - Count */
+    router.get('/count/' + collectionName, function(req, res, next) {
+        // Build a query from the request
+        var query = url.parse(req.url, true).query;
+        for (var fieldName in query) {
+            if(fieldName.endsWith('id')) {
+                query[fieldName] = new mongodb.ObjectId(query[fieldName]);
+            }
+        }
+
+        // Build a cursor
+        var cursor = (query == {}) ? req.db.collection(collectionName).find() : req.db.collection(collectionName).find(query);
+
+        // Ask how many employees there are
+        cursor.count((err, result) => {
+            if (err != null) {
+                // An error occured
+                res.send({
+                    error: true,
+                    reason: err
+                });
+            } else {
+                // Return result
+                res.send({
+                    error: false,
+                    result: result
+                });
+            }
+        });
+    });
+
     /* GET - Read */
     router.get('/get/' + collectionName, function(req, res, next) {
         // Build a query from the request
@@ -258,38 +289,6 @@ function createRouter(collectionName, fields) {
     });
 }
 
-// Query location employee count
-router.get('/query/employeecount', function(req, res, next) {
-    // Build a query from the request
-    var locationId = url.parse(req.url, true).query.locationId;
-    if (locationId == undefined) {
-        res.send({
-            error: true,
-            reason: 'locationId parameter must be set'
-        });
-        return;
-    } else {
-        locationId = new mongodb.ObjectId(locationId);
-    }
-
-    // Ask how many employees there are
-    req.db.collection('people').find({ 'location.$id' : locationId }).count((err, result) => {
-        if (err != null) {
-            // An error occured
-            res.send({
-                error: true,
-                reason: err
-            });
-        } else {
-            // Return result
-            res.send({
-                error: false,
-                result: result
-            });
-        }
-    });
-});
-
 // Locations router
 createRouter('locations', {
     name: {},
@@ -299,7 +298,8 @@ createRouter('locations', {
 
 // Departments router
 createRouter('departments', {
-    name: {}
+    name: {},
+    head: { refToo: 'people' }
 });
 
 // Skills router
@@ -312,6 +312,8 @@ createRouter('skills', {
 createRouter('people', {
     firstname: {},
     lastname: {},
+    phone: {},
+    room: {},
     department: { refToo: 'departments' },
     location: { refToo: 'locations' },
     skills: { refToo: 'skills', isArray: true }

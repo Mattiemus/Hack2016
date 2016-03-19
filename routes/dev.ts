@@ -23,7 +23,8 @@ router.get('/edit', function(req, res, next) {
             {
                 name: 'departments',
                 fields: [
-                    { name: 'name' }
+                    { name: 'name' },
+                    { name: 'head' }
                 ]
             },
             {
@@ -38,6 +39,8 @@ router.get('/edit', function(req, res, next) {
                 fields: [
                     { name: 'firstname' },
                     { name: 'lastname' },
+                    { name: 'phone' },
+                    { name: 'room' },
                     { name: 'department' },
                     { name: 'location' },
                     { name: 'skills', isArray: true },
