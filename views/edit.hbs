@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Database Editor</title>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+    <style>
+      body {
+        margin: 0;
+      }
+      .container {
+        display: flex;
+      }
+      .column {
+        flex: 1;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="column">
+        <h1>Locations</h1>
+
+        <h2>Insert</h2>
+        <form action="../action/insert/location" method="post">
+          <table>
+            <tr>
+              <td><label for="name">Name</label></td>
+              <td><input type="text" name="name" id="name"></td>
+            </tr>
+            <tr>
+              <td><label for="longitude">Longitude</label></td>
+              <td><input type="text" name="longitude" id="longitude"></td>
+            </tr>
+            <tr>
+              <td><label for="latitude">Latitude</label></td>
+              <td><input type="text" name="latitude" id="latitude"></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="submit" style="float:right;"></td>
+            </tr>
+          </table>
+        </form>
+
+        <h2>Delete</h2>
+        <form action="../action/delete/location" method="post">
+          <table>
+            <tr>
+              <td><label for="name">Id</label></td>
+              <td><input type="text" name="id" id="id"></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td><input type="submit" style="float:right;"></td>
+            </tr>
+          </table>
+        </form>
+      </div>
+
+      <div class="column">
+        <h1>Departments</h1>
+      </div>
+
+      <div class="column">
+        <h1>Skills</h1>
+      </div>
+    </div>
+  </body>
+</html>
