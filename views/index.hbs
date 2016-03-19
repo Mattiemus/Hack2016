@@ -28,6 +28,11 @@
 	<script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.css' rel='stylesheet' />
 </head>
 
 
@@ -39,9 +44,10 @@
 	<p>Welcome to {{title}}</p>-->
 
     <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">
-        <!-- ko foreach: locationCircles -->
-            <div data-bind="text: $data.name"></div>
+        <!--<!-- ko foreach: locationCircles -->
+            <!--<div data-bind="text: $data.name"></div>-->
         <!-- /ko -->
+        <div id="mapid"></div>
     </div>
 
     <div data-bind="visible: (displaySection() == 'skills')" id="skillsContainer">skills</div>
