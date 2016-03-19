@@ -5,7 +5,7 @@ var router = express.Router();
 
 /* GET error. */
 router.get('/error', function(req, res, next) {
-    throw Error('Testing error system');
+    throw new Error('Testing error system');
 });
 
 /* GET edit. */

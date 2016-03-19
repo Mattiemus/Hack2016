@@ -62,15 +62,26 @@ function createRouter(collectionName, fields) {
     /* POST - Update */
     router.post('/update/' + collectionName, function(req, res, next) {
         // Make sure we have an id to update
-        if(!req.body.id || req.body.id.length != 12 || req.body.id.length != 24) {
+        if(!req.body.id || req.body.id.length == 0) {
             res.send({
                 error: true,
-                reason: 'An id of 12 or 24 characters must be specified'
+                reason: 'An id must be specified'
+            });
+        }
+
+        // Verify the id
+        var id;
+        try {
+            id = new mongodb.ObjectID(req.body.id);
+        } catch(e) {
+            res.send({
+                error: true,
+                reason: e
             });
         }
 
         // Get all current values
-        var cursor = req.db.collection(collectionName).find({ "_id": new mongodb.ObjectID(req.body.id) });
+        var cursor = req.db.collection(collectionName).find({ "_id": id });
         var result = [];
 
         // Iterate over the (single) result
@@ -117,14 +128,26 @@ function createRouter(collectionName, fields) {
 
     /* POST - Delete */
     router.post('/delete/' + collectionName, function(req, res, next) {
-        if(!req.body.id || req.body.id.length != 12 || req.body.id.length != 24) {
+        if(!req.body.id || req.body.id.length == 0) {
             res.send({
                 error: true,
-                reason: 'An id of 12 or 24 characters must be specified'
+                reason: 'An id must be specified'
             });
         }
 
-        req.db.collection(collectionName).deleteOne({ "_id": new mongodb.ObjectID(req.body.id) }, (err, result) => {
+        // Verify the id
+        var id;
+        try {
+            id = new mongodb.ObjectID(req.body.id);
+        } catch(e) {
+            res.send({
+                error: true,
+                reason: e
+            });
+        }
+
+        // Delete the record
+        req.db.collection(collectionName).deleteOne({ "_id": id }, (err, result) => {
             res.send({
                 error: (err != null),
                 reason: (err != null) ? err : undefined,
