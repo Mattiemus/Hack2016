@@ -26,6 +26,8 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 	<script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
 </head>
 
 
@@ -36,14 +38,19 @@
 	<!--<h1>{{title}}</h1>
 	<p>Welcome to {{title}}</p>-->
 
-    <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">location</div>
+    <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">
+        <!-- ko foreach: locationCircles -->
+            <div data-bind="text: $data.name"></div>
+        <!-- /ko -->
+    </div>
+
     <div data-bind="visible: (displaySection() == 'skills')" id="skillsContainer">skills</div>
     <div data-bind="visible: (displaySection() == 'people')" id="peopleContainer">people</div>
 
 	<div class="buttonContainer">
-		<button data-bind="click: (function(){displaySection('location')})" type="button">Location</button>
-		<button data-bind="click: (function(){displaySection('skills')})" type="button">Skills</button>
-		<button data-bind="click: (function(){displaySection('people')})" type="button">People</button>
+		<button data-bind="click: (function(){clickLocation()})" type="button">Location</button>
+		<button data-bind="click: (function(){clickSkills()})" type="button">Skills</button>
+		<button data-bind="click: (function(){clickPeople()})" type="button">People</button>
 	</div>
 
 
