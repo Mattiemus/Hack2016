@@ -8,7 +8,7 @@ import cookieParser = require('cookie-parser');
 import bodyParser = require('body-parser');
 
 import routes = require('./routes/index');
-import users = require('./routes/users');
+import action = require('./routes/action');
 
 import hbs = require('express-hbs');
 
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
 
 // Add page routes
 app.use('/', routes);
-app.use('/users', users);
+app.use('/action', action);
 
 // Catch 404 and forward to error handler
 app.use((req, res, next) => {
