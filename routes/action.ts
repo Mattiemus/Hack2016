@@ -119,11 +119,10 @@ function createRouter(collectionName, fields) {
                                     ((fieldNameCpy, iCpy, myCursor) => {
                                         myCursor.each((err, refDoc) => {
                                             // Set the referenced value
-                                            if(err == null && refDoc != null) {
+                                            if(refDoc != null) {
                                                 doc[fieldNameCpy][iCpy] = refDoc;
                                                 recordsGrabbingRefs--;
-                                            }
-                                            if(err != null) {
+                                            } else {
                                                 recordsGrabbingRefs--;
                                             }
 
@@ -144,13 +143,14 @@ function createRouter(collectionName, fields) {
                                 ((fieldNameCpy, myCursor) => {
                                     myCursor.each((err, refDoc) => {
                                         // Set the referenced value
-                                        if(err == null && refDoc != null) {
+                                        if(refDoc != null) {
                                             doc[fieldNameCpy] = refDoc;
                                             recordsGrabbingRefs--;
-                                        }
-                                        if(err != null) {
+                                        } else {
                                             recordsGrabbingRefs--;
                                         }
+
+                                        console.log(recordsGrabbingRefs, err == null, refDoc == null);
 
                                         // If we have all the fields, send the response!
                                         if (!hasSentOff && recordsGrabbingRefs == 0) {

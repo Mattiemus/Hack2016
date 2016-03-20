@@ -59,16 +59,17 @@ $(document).ready(function() {
         for(var skillName in skillCounts) {
             root.children.push({
                 name: skillName,
-                size: skillCounts[skillName] + Math.round(Math.random() * 20)
+                size: skillCounts[skillName]
             });
         }
 
         var node = svg.selectAll(".node")
             .data(bubble.nodes(classes(root))
             .filter(function(d) { return !d.children; }))
-          .enter().append("g")
+            .enter().append("g")
             .attr("class", "node")
-            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; });
+            .attr("transform", function(d) { return "translate(" + d.x + "," + d.y + ")"; })
+            .style("cursor", "pointer");
 
         node.append("title")
             .text(function(d) { return d.className + ": " + format(d.value); });
@@ -81,6 +82,10 @@ $(document).ready(function() {
             .attr("dy", ".3em")
             .style("text-anchor", "middle")
             .text(function(d) { return d.className.substring(0, d.r / 3); });
+
+        node.on("click", function(d) {
+            console.log(d);
+        });
 
         // Returns a flattened hierarchy containing all leaf nodes under the root.
         function classes(root) {
