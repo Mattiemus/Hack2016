@@ -117,13 +117,17 @@ function createRouter(collectionName, fields) {
                                     // Query for the referenced field
                                     recordsGrabbingRefs++;
                                     ((fieldNameCpy, iCpy, myCursor) => {
+                                        var hasSet = false;
                                         myCursor.each((err, refDoc) => {
                                             // Set the referenced value
-                                            if(refDoc != null) {
-                                                doc[fieldNameCpy][iCpy] = refDoc;
+                                            if(!hasSet && refDoc != null) {
+                                                doc[fieldNameCpy] = refDoc;
+                                                hasSet = true;
                                                 recordsGrabbingRefs--;
-                                            } else {
+                                            }
+                                            if(!hasSet && refDoc == null) {
                                                 recordsGrabbingRefs--;
+                                                hasSet = true;
                                             }
 
                                             // If we have all the fields, send the response!
@@ -141,16 +145,18 @@ function createRouter(collectionName, fields) {
                                 // Query for the referenced field
                                 recordsGrabbingRefs++;
                                 ((fieldNameCpy, myCursor) => {
+                                    var hasSet = false;
                                     myCursor.each((err, refDoc) => {
                                         // Set the referenced value
-                                        if(refDoc != null) {
+                                        if(!hasSet && refDoc != null) {
                                             doc[fieldNameCpy] = refDoc;
-                                            recordsGrabbingRefs--;
-                                        } else {
+                                            hasSet = true;
                                             recordsGrabbingRefs--;
                                         }
-
-                                        console.log(recordsGrabbingRefs, err == null, refDoc == null);
+                                        if(!hasSet && refDoc == null) {
+                                            recordsGrabbingRefs--;
+                                            hasSet = true;
+                                        }
 
                                         // If we have all the fields, send the response!
                                         if (!hasSentOff && recordsGrabbingRefs == 0) {
