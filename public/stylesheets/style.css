@@ -42,3 +42,35 @@ a {
   background-image: linear-gradient(to bottom, #3cb0fd, #3498db);
   text-decoration: none;
 }
+
+
+#mapid { height: 671px; }
+
+.mapIcon {
+    background-color: #E1BC29;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    padding: 9px 0px 0px 10px;
+    /*margin-left: -20px;
+    margin-top: -20px;*/
+}
+
+.fa {
+    color: #ffffff;
+}
+
+#locationData {
+    padding: 25px 50px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: #525252;
+}
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 3px solid #7768AE !important;
+    margin: 1em 0;
+    padding: 0; 
+}

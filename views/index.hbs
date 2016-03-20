@@ -26,24 +26,40 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
 
 	<script src="https://code.createjs.com/easeljs-0.8.2.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet/v0.7.7/leaflet.js"></script>
+    <script src='https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.js'></script>
+    <link href='https://api.mapbox.com/mapbox.js/v2.3.0/mapbox.css' rel='stylesheet' />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js"></script>
 </head>
 
 
 <body>
 
+    <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">
+        <div data-bind="visible: viewMap()" id="mapid"></div>
+        <div data-bind="visible: viewMap() == false" id="locationData">
+            <h1 data-bind="text: viewLocationName" style="font-size: 40px"></h1>
+            <hr />
+            <h3 data-bind="" style="font-size: 23px">Head of Office - Paula Besson</h3>
+            <h3 data-bind="text: viewLocationEmployeesNo() + ' Employees'" style="font-size: 23px"></h3>
 
+            <br />
 
-	<!--<h1>{{title}}</h1>
-	<p>Welcome to {{title}}</p>-->
+            <canvas id="myChart" width="400" height="400"></canvas>
+        </div>
+    </div>
 
-    <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">location</div>
     <div data-bind="visible: (displaySection() == 'skills')" id="skillsContainer">skills</div>
     <div data-bind="visible: (displaySection() == 'people')" id="peopleContainer">people</div>
 
 	<div class="buttonContainer">
-		<button data-bind="click: (function(){displaySection('location')})" type="button">Location</button>
-		<button data-bind="click: (function(){displaySection('skills')})" type="button">Skills</button>
-		<button data-bind="click: (function(){displaySection('people')})" type="button">People</button>
+		<button data-bind="click: (function(){clickLocation()})" type="button">Location</button>
+		<button data-bind="click: (function(){clickSkills()})" type="button">Skills</button>
+		<button data-bind="click: (function(){clickPeople()})" type="button">People</button>
 	</div>
 
 
