@@ -70,9 +70,17 @@ $(document).ready(function() {
               }
               return false;
           }).map(function(person) {
+              var skillsId = 0;
+              for(var i = 0; i < person.skills.length; i++) {
+                  if(person.skills[i].name == skillName) {
+                      skillsId = i;
+                      break;
+                  }
+              }
+
               return {
                   name: person.firstname + ' ' + person.lastname,
-                  size: person.skills[0].proficiency,
+                  size: person.skills[skillsId].proficiency,
                   _id: person._id
               };
           });
