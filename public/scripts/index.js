@@ -309,7 +309,7 @@ function AppViewModel() {
         function displayBubbles(skills) {
             $("#skillBubbles").empty();
 
-            var diameter = 400,
+            var diameter = 800,
                 format = d3.format(",d"),
                 color = d3.scale.category20c();
 
