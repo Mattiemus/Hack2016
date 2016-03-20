@@ -330,13 +330,15 @@ createRouter('departments', {
 // Skills router
 createRouter('skills', {
     name: {},
-    category: {}
+    category: {},
+    proficiency: {}
 });
 
 // People router
 createRouter('people', {
     firstname: {},
     lastname: {},
+    photoUrl: {},
     gender: {},
     phone: {},
     email: {},
@@ -347,8 +349,10 @@ createRouter('people', {
     department: { refToo: 'departments' },
     location: { refToo: 'locations' },
     skills: { refToo: 'skills', isArray: true }
-    happiness: {},
-    workload: {},
+    happiness: { isArray: true },
+    workload: { isArray: true },
+    comments: { isArray: true },
+    commentDate: { isArray: true },
     likes: { isArray: true },
     dislikes: { isArray: true }
 });
