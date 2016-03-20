@@ -60,21 +60,27 @@ $(document).ready(function() {
         d3.select(self.frameElement).style("height", diameter + "px");
     }
 
-    $.getJSON("/action/get/people", function(data) {
-        var skills = [];
-        data.result.forEach(function(value) {
-            skills.push(value.skills);
-        });
-        skills = [].concat.apply([], skills);
+    function getPeopleBySkill(skillName) {
+      $.getJSON("/action/get/people", function(data) {
+          data = data.result.filter(function(person) {
+              for(var i = 0; i < person.skills.length; i++) {
+                  if(person.skills[i].name == skillName) {
+                      return true;
+                  }
+              }
+              return false;
+          }).map(function(person) {
+              return {
+                  name: person.firstname + ' ' + person.lastname,
+                  size: person.skills[0].proficiency,
+                  _id: person._id
+              };
+          });
 
-        for (var i = 0, j = skills.length; i < j; i++) {
-            for(var j = 0; j < skills.length; j++) {
-                if(skills[j].name == skills[i].name) {
-                    skills[j].size = (skills[j].size || 0) + 1;
-                }
-            }
-        }
+          console.log(data);
+          displayBubbles(data);
+      });
+    }
 
-        displayBubbles(skills);
-    });
+    getPeopleBySkill('Programming');
 });
