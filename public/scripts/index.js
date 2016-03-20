@@ -502,8 +502,10 @@ function AppViewModel() {
                     var container = $("#peopleTiles").empty();
 
                     for (var i = 0; i < data.result.length; i++) {
+                        console.log(data.result[i]);
                         ((iCpy) => {
-                            var img = $('<img src="' + data.result[i].photoUrl + '" style="cursor: pointer;" height="200px" width="200px">')
+                            var img = $('<div class="col-md-3"><img src="http://refinerysource.com/wp-content/uploads/2013/01/avatar.png" style="cursor: pointer;" height="200" width="200">'
+                                + '<h2>' + data.result[iCpy].firstname + ' ' + data.result[iCpy].lastname + '</h2><div>' + data.result[iCpy].rank + '</div><div>' + data.result[iCpy].location.name + '</div></div>')
                                 .click(function () {
                                     getPeopleById(data.result[iCpy]._id);
                                 });
