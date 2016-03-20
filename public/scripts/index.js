@@ -9,6 +9,12 @@ function AppViewModel() {
     var locationMap = L.mapbox.map('mapid', 'caterpaula.pf1keid7');
     var myLayer = L.mapbox.featureLayer().addTo(locationMap);
 
+        self.colors = ["#4d9de0", "#e15554", "#e1bc29", "#3bb273", "#7768ae"];
+
+        self.randomColour = function () {
+            return self.colors[Math.floor(Math.random() * self.colors.length - 1)];
+        };
+
         self.locationCircles = ko.observableArray();
 
         self.displaySection = ko.observable();
@@ -84,6 +90,7 @@ function AppViewModel() {
         }
 
         self.clickSkills = function () {
+            self.showSkills();
             self.displaySection('skills');
         }
 
@@ -99,11 +106,36 @@ function AppViewModel() {
             var locationID = $.getJSON("/action/get/locations?latitude=" + self.locationArray()[0] + "&longitude=" + self.locationArray()[1], function (data) {
                 self.viewLocationID(data.result[0]._id);
                 self.viewLocationName(data.result[0].name);
-                self.viewLocationPhone(data.result[0].phone);
-                self.viewLocationFax(data.result[0].fax);
-                self.viewLocationAddress(data.result[0].address);
-                self.viewLocationEmail(data.result[0].email);
+                self.viewLocationPhone('<i class="fa fa-phone"></i> Phone: ' + data.result[0].phone);
+                self.viewLocationFax('<i class="fa fa-fax"></i> Fax: '+ data.result[0].fax);
+                self.viewLocationAddress('<i class="fa fa-building"></i> Address: ' + data.result[0].address);
+                self.viewLocationEmail('<i class="fa fa-envelope"></i> Email: ' + data.result[0].email);
                 
+                var calendar = $.getJSON("/action/get/people?location.$id=" + self.viewLocationID(), function (data) {
+                    var events = data.result.map(function (value) {
+                        return {
+                            id: value._id,
+                            title: value.firstname + " " + value.lastname + "'s Review",
+                            start: value.reviewDate
+                        };
+                    });
+
+                    $('#calendar').fullCalendar({
+                        header: {
+                            left: 'prev,next today',
+                            center: 'title',
+                            right: 'month,agendaWeek,agendaDay'
+                        },
+                        editable: true,
+                        eventLimit: true,
+                        events: events,
+                        eventClick: function (event, jsEvent, view) {
+                            console.log(event.id);
+                        }
+                    });
+                });
+
+
                 var happiness = $.getJSON("action/get/people?location.$id=" + self.viewLocationID(), function (data) {
                     var happinessTotal = 0;
 
@@ -111,7 +143,7 @@ function AppViewModel() {
                         happinessTotal += data.result[i].happiness * 100;
                     }
 
-                    self.viewLocationHappiness(happinessTotal / data.result.length);
+                    self.viewLocationHappiness(Math.floor(happinessTotal / data.result.length));
                 });
 
                 var workload = $.getJSON("action/get/people?location.$id=" + self.viewLocationID(), function (data) {
@@ -121,7 +153,7 @@ function AppViewModel() {
                         workloadTotal += data.result[i].workload * 100;
                     }
 
-                    self.viewLocationWorkload(workloadTotal / data.result.length);
+                    self.viewLocationWorkload(Math.floor(workloadTotal / data.result.length));
                 });
 
                 var departments = $.getJSON("/action/get/people?location.$id=" + self.viewLocationID(), function (data) {
@@ -145,8 +177,12 @@ function AppViewModel() {
                              });
                     };
 
+                    var options = {
+                        responsive: true
+                    };
+
                     var ctx = $("#departmentChart").get(0).getContext("2d");
-                    var departmentPieChart = new Chart(ctx).Pie(departmentdata);
+                    var departmentPieChart = new Chart(ctx).Pie(departmentdata, options);
                 });
 
                 var skills = $.getJSON("/action/get/people?location.$id=" + self.viewLocationID(), function (data) {
@@ -155,6 +191,8 @@ function AppViewModel() {
                         skillsArr.push(data.result[i].skills);
                         skillsArr.concat();
                     }
+
+                    console.log(data.result);
 
                     var merged = [].concat.apply([], skillsArr);
 
@@ -184,15 +222,18 @@ function AppViewModel() {
                         data: skillsCountArray
                     }];
 
-                    
+                    var options = {
+                        responsive: true
+                    };
+
                     var ctx = $("#skillsChart").get(0).getContext("2d");
-                    var skillsChart = new Chart(ctx).Radar(skillsdata);
+                    var skillsChart = new Chart(ctx).Radar(skillsdata, options);
                 });
 
 
 
                 var employeeNo = $.getJSON("/action/count/people?location.$id=" + self.viewLocationID(), function (data) {
-                    self.viewLocationEmployeesNo(data.result);
+                    self.viewLocationEmployeesNo('<i class="fa fa-users"></i>  ' + data.result + ' employees');
                 });
 
                 var locationMales = $.getJSON("/action/count/people?gender=male&location.$id=" + self.viewLocationID(), function (data) {
@@ -226,6 +267,7 @@ function AppViewModel() {
                             });
 
                             var options = {
+                                responsive: true,
                                 //String - A legend template
                                 legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>"
                             };
@@ -240,6 +282,110 @@ function AppViewModel() {
             });
 
         }
+
+        self.showSkills = function () {
+            function displayBubbles(skills) {
+                $("#skillBubbles").empty();
+
+                var diameter = 400,
+                    format = d3.format(",d"),
+                    color = d3.scale.category20c();
+
+                var bubble = d3.layout.pack()
+                    .sort(null)
+                    .size([diameter, diameter])
+                    .padding(1.5);
+
+                var svg = d3.select("#skillBubbles")
+                    .append("svg")
+                    .attr("width", diameter)
+                    .attr("height", diameter)
+                    .attr("class", "bubble");
+
+                var root = {
+                    name: "Skills",
+                    children: skills
+                };
+
+                var node = svg.selectAll(".node")
+                    .data(bubble.nodes(classes(root))
+                    .filter(function (d) { return !d.children; }))
+                    .enter().append("g")
+                    .attr("class", "node")
+                    .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
+                    .style("cursor", "pointer");
+
+                node.append("title")
+                    .text(function (d) { return d.className + ": " + format(d.value); });
+
+                node.append("circle")
+                    .attr("r", function (d) { return d.r; })
+                    .style("fill", self.randomColour());
+
+                node.append("text")
+                    .attr("dy", ".3em")
+                    .style("text-anchor", "middle")
+                    .text(function (d) { return d.className; });
+
+                node.on("click", function (bubble) {
+                    console.log(bubble.id);
+                });
+
+                // Returns a flattened hierarchy containing all leaf nodes under the root.
+                function classes(root) {
+                    var classes = [];
+
+                    function recurse(name, node) {
+                        if (node.children) node.children.forEach(function (child) { recurse(node.name, child); });
+                        else classes.push({ packageName: name, className: node.name, value: node.size, id: node._id });
+                    }
+
+                    recurse(null, root);
+                    return { children: classes };
+                }
+
+                d3.select(self.frameElement).style("height", diameter + "px");
+            }
+
+            $.getJSON("/action/get/people", function (data) {
+                //var skills = [];
+                //data.result.forEach(function (value) {
+                //    skills.push(value.skills);
+                //});
+                //skills = [].concat.apply([], skills);
+
+                //for (var i = 0, j = skills.length; i < j; i++) {
+                //    for (var j = 0; j < skills.length; j++) {
+                //        if (skills[j].name == skills[i].name) {
+                //            skills[j].size = (skills[j].size || 0) + 1;
+                //        }
+                //    }
+                //}
+
+                //var hist = {};
+                //skills.map(function (a) { if (a.name in hist) hist[a.name]++; else hist[a.name] = 1; });
+
+                var skillsArr = [];
+                for (var i = 0; i < data.result.length; i++) {
+                    for (var k = 0; k < data.result[i].skills.length; k++) {
+                        var exists = false;
+                        for (var j = 0; j < skillsArr.length; j++) {
+                            if (skillsArr[j].name == data.result[i].skills[k].name) {
+                                exists = true;
+                                skillsArr[j].size++;
+                            }
+                        }
+                        if (!exists) {
+                            data.result[i].skills[k].size = 1;
+                            skillsArr.push(data.result[i].skills[k]);
+                        }
+                    }
+                }
+
+                console.log(skillsArr);
+                displayBubbles(skillsArr);
+            });
+        };
 
         self.clickLocation();
 
