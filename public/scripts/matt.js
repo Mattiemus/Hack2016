@@ -30,11 +30,12 @@ $(document).ready(function() {
         });
         skills = [].concat.apply([], skills);
 
-        var skillCounts = {};
-        var categoryCounts = {};
         for (var i = 0, j = skills.length; i < j; i++) {
-           skillCounts[skills[i].name] = (skillCounts[skills[i].name] || 0) + 1;
-           categoryCounts[skills[i].category] = (categoryCounts[skills[i].category] || 0) + 1;
+            for(var j = 0; j < skills.length; j++) {
+                if(skills[j].name == skills[i].name) {
+                    skills[j].size = (skills[j].size || 0) + 1;
+                }
+            }
         }
 
         var diameter = 400,
@@ -53,15 +54,8 @@ $(document).ready(function() {
 
         var root = {
           name: "Skills",
-          children: []
+          children: skills
         };
-
-        for(var skillName in skillCounts) {
-            root.children.push({
-                name: skillName,
-                size: skillCounts[skillName]
-            });
-        }
 
         var node = svg.selectAll(".node")
             .data(bubble.nodes(classes(root))
@@ -83,8 +77,8 @@ $(document).ready(function() {
             .style("text-anchor", "middle")
             .text(function(d) { return d.className.substring(0, d.r / 3); });
 
-        node.on("click", function(d) {
-            console.log(d);
+        node.on("click", function(bubble) {
+            console.log(bubble.id);
         });
 
         // Returns a flattened hierarchy containing all leaf nodes under the root.
@@ -93,7 +87,7 @@ $(document).ready(function() {
 
           function recurse(name, node) {
             if (node.children) node.children.forEach(function(child) { recurse(node.name, child); });
-            else classes.push({packageName: name, className: node.name, value: node.size});
+            else classes.push({packageName: name, className: node.name, value: node.size, id: node._id});
           }
 
           recurse(null, root);
