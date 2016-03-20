@@ -121,7 +121,7 @@ function createRouter(collectionName, fields) {
                                         myCursor.each((err, refDoc) => {
                                             // Set the referenced value
                                             if(!hasSet && refDoc != null) {
-                                                doc[fieldNameCpy] = refDoc;
+                                                doc[fieldNameCpy][iCpy] = refDoc;
                                                 hasSet = true;
                                                 recordsGrabbingRefs--;
                                             }
