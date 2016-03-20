@@ -250,7 +250,12 @@ function AppViewModel() {
 
 
             var employeeNo = $.getJSON("/action/count/people?location.$id=" + self.viewLocationID(), function (data) {
-                self.viewLocationEmployeesNo('<i class="fa fa-users"></i>  ' + data.result + ' employees');
+                window.bodgeShowPeople = function () {
+                    self.showPeople(undefined, { 'location': self.viewLocationName() });
+                    self.displaySection('showPeople');
+                };
+                self.viewLocationEmployeesNo('<a onclick="bodgeShowPeople();"><i class="fa fa-users"></i>  ' + data.result + ' employees</a>');
+                
             });
 
             var locationMales = $.getJSON("/action/count/people?gender=male&location.$id=" + self.viewLocationID(), function (data) {
@@ -492,152 +497,193 @@ function AppViewModel() {
         });
     };
 
-    self.showPeople = function (personName) {
+    self.doPeopleSearch = function () {
+        self.showPeople(undefined, {
+            firstname: $('#people-search-firstname').val()
+        });
+    };
 
-        function getPeopleById(personName) {
-            var query = personName ? "?_id=" + personName : "";
-            $.getJSON("/action/get/people" + query, function (data) {
-                if (data.result.length != 1) {
-                    // Lots of peeps
-                    var container = $("#peopleTiles").empty();
-
-                    for (var i = 0; i < data.result.length; i++) {
-                        console.log(data.result[i]);
-                        ((iCpy) => {
-                            var img = $('<div class="col-md-3"><img src="http://refinerysource.com/wp-content/uploads/2013/01/avatar.png" style="cursor: pointer;" height="200" width="200">'
-                                + '<h2>' + data.result[iCpy].firstname + ' ' + data.result[iCpy].lastname + '</h2><div>' + data.result[iCpy].rank + '</div><div>' + data.result[iCpy].location.name + '</div></div>')
-                                .click(function () {
-                                    getPeopleById(data.result[iCpy]._id);
-                                });
-                            container.append(img);
-                        })(i);
-                    }
-                } else {
-                    // Just the one peep
-
-                    self.displaySection("person");
-                    self.viewPersonName(data.result[0].firstname + " " + data.result[0].lastname);
-                    self.viewPersonLocation(data.result[0].location.address);
-                    self.viewPersonDepartment(data.result[0].department.name);
-                    self.viewPersonRoom(data.result[0].room);
-                    self.viewPersonEmail(data.result[0].email);
-                    self.viewPersonPhone(data.result[0].phone);
-                    self.viewPersonFax(data.result[0].fax);
-                    self.viewPersonRank(data.result[0].rank);
-                    self.viewPersonSkills(data.result[0].skills);
-                   
-                    self.viewPersonLikes(data.result[0].likes);
-                    self.viewPersonDislikes(data.result[0].dislikes);
-
-                    //self.viewPersonURL("");
-
-                    data.result[0].skills = data.result[0].skills.map(function (skill) {
-                        return {
-                            name: skill.name,
-                            category: skill.category,
-                            size: skill.proficiency,
-                            _id: data.result[0]._id
-                        };
-                    });
-
-                    console.log(data.result[0].skills);
-                    displayBubbles(data.result[0].skills);
-                        
-                    function displayBubbles(skills) {
-                        $("#personSkillBubbles").empty();
-                        var diameter = 400,
-                            format = d3.format(",d"),
-                            color = d3.scale.category20c();
-
-                        var bubble = d3.layout.pack()
-                            .sort(null)
-                            .size([diameter, diameter])
-                            .padding(1.5);
-
-                        var svg = d3.select("#personSkillBubbles")
-                            .append("svg")
-                            .attr("width", diameter)
-                            .attr("height", diameter)
-                            .attr("class", "bubble");
-
-                        var root = {
-                            name: "Skills",
-                            children: skills
-                        };
-
-                        var node = svg.selectAll(".node")
-                            .data(bubble.nodes(classes(root))
-                            .filter(function (d) { return !d.children; }))
-                            .enter().append("g")
-                            .attr("class", "node")
-                            .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
-                            .style("cursor", "pointer");
-
-                        node.append("title")
-                            .text(function (d) { return d.className + ": " + format(d.value); });
-
-                        node.append("circle")
-                            .attr("r", function (d) { return d.r; })
-                            .style("fill", self.randomColour());
-
-                        node.append("text")
-                                        .attr("dy", "0em")
-                                        .style("text-anchor", "middle")
-                                        .style("font-weight", "bold")
-                                        .style("font-size", "18px")
-                                        .style("color", "#525252")
-                                        .text(function (d) { return d.className });
-
-                        node.append("text")
-                            .attr("dy", "1.5em")
-                            .style("text-anchor", "middle")
-                            .style("color", "#525252")
-                            .text(function (d) { return d.category });
-
-                        // Returns a flattened hierarchy containing all leaf nodes under the root.
-                        function classes(root) {
-                            var classes = [];
-
-                            function recurse(name, node) {
-                                if (node.children) node.children.forEach(function (child) { recurse(node.name, child); });
-                                else classes.push({ packageName: name, className: node.name, category: node.category, value: node.size, id: node._id });
+    self.showPeople = function (personName, searchQuery) {
+        function queryPeople(query, callback) {
+            $.getJSON("/action/get/people", function (data) {
+                console.log(data);
+                data.result = data.result.filter(function (person) {
+                    for(var queryField in query) {
+                        if(queryField == 'happiness' || queryField == 'workload' || queryField == 'comments' ||
+                           queryField == 'commentDate' || queryField == 'likes' || queryField == 'dislikes') {
+                            for(var i = 0; i < person[queryField].length; i++) {
+                                if(person[queryField][i].indexOf(query[queryField]) > -1) {
+                                    return true;
+                                }
                             }
-
-                            recurse(null, root);
-                            return { children: classes };
+                            return false;
+                        } else if (queryField == 'skills') {
+                            for(var i = 0; i < person[queryField].length; i++) {
+                                if(person[queryField][i].name.indexOf(query[queryField]) > -1) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        } else if (queryField == 'location' || queryField == 'department') {
+                            return person[queryField].name.indexOf(query[queryField]) > -1;
+                        } else {
+                            return person[queryField].indexOf(query[queryField]) > -1;
                         }
-
-                        d3.select(self.frameElement).style("height", diameter + "px");
                     }
 
-                    $("#personLikes").empty();
-                    $("#personDislikes").empty();
+                    return true;
+                });
 
-                    if (self.viewPersonLikes().length > 0) {
-                        $("#personLikes").append("<h1>Likes</h1>");
-                        for (var i = 0; i < self.viewPersonLikes().length; i++) {
-                            $("#personLikes").append("<div>" + self.viewPersonLikes()[i] + "</div>");
-                        };
-                    } else {
-                        $("#personLikes").append("<h1>Likes</h1>");
-                        $("#personLikes").append("<div>None given</div>");
-                    }
-
-                    if (self.viewPersonDislikes().length > 0) {
-                        $("#personLikes").append("<h1>Dislikes</h1>");
-                        for (var i = 0; i < self.viewPersonDislikes().length; i++) {
-                            $("#personDislikes").append("<div>" + self.viewPersonDislikes()[i] + "</div>");
-                        };
-                    } else {
-                        $("#personLikes").append("<h1>Dislikes</h1>");
-                        $("#personDislikes").append("<div>None given</div>");
-                    }
-
-                }
+                callback(data);
             });
         }
 
-        getPeopleById(personName);
+        var callbackFunc = function (data) {
+            if (data.result.length != 1) {
+                // Lots of peeps
+                var container = $("#peopleTiles").empty();
+
+                for (var i = 0; i < data.result.length; i++) {
+                    ((iCpy) => {
+                        var img = $('<div class="col-md-3"><img src="http://refinerysource.com/wp-content/uploads/2013/01/avatar.png" style="cursor: pointer;" height="200" width="200">'
+                            + '<h2>' + data.result[iCpy].firstname + ' ' + data.result[iCpy].lastname + '</h2><div>' + data.result[iCpy].rank + '</div><div>' + data.result[iCpy].location.name + '</div></div>')
+                            .click(function () {
+                                queryPeople({ _id: data.result[iCpy]._id }, callbackFunc);
+                            });
+                        container.append(img);
+                    })(i);
+                }
+            } else {
+                // Just the one peep
+
+                self.displaySection("person");
+                self.viewPersonName(data.result[0].firstname + " " + data.result[0].lastname);
+                self.viewPersonLocation(data.result[0].location.address);
+                self.viewPersonDepartment(data.result[0].department.name);
+                self.viewPersonRoom(data.result[0].room);
+                self.viewPersonEmail(data.result[0].email);
+                self.viewPersonPhone(data.result[0].phone);
+                self.viewPersonFax(data.result[0].fax);
+                self.viewPersonRank(data.result[0].rank);
+                self.viewPersonSkills(data.result[0].skills);
+
+                self.viewPersonLikes(data.result[0].likes);
+                self.viewPersonDislikes(data.result[0].dislikes);
+
+                //self.viewPersonURL("");
+
+                data.result[0].skills = data.result[0].skills.map(function (skill) {
+                    return {
+                        name: skill.name,
+                        category: skill.category,
+                        size: skill.proficiency,
+                        _id: data.result[0]._id
+                    };
+                });
+
+                console.log(data.result[0].skills);
+                displayBubbles(data.result[0].skills);
+
+                function displayBubbles(skills) {
+                    $("#personSkillBubbles").empty();
+                    var diameter = 400,
+                        format = d3.format(",d"),
+                        color = d3.scale.category20c();
+
+                    var bubble = d3.layout.pack()
+                        .sort(null)
+                        .size([diameter, diameter])
+                        .padding(1.5);
+
+                    var svg = d3.select("#personSkillBubbles")
+                        .append("svg")
+                        .attr("width", diameter)
+                        .attr("height", diameter)
+                        .attr("class", "bubble");
+
+                    var root = {
+                        name: "Skills",
+                        children: skills
+                    };
+
+                    var node = svg.selectAll(".node")
+                        .data(bubble.nodes(classes(root))
+                        .filter(function (d) { return !d.children; }))
+                        .enter().append("g")
+                        .attr("class", "node")
+                        .attr("transform", function (d) { return "translate(" + d.x + "," + d.y + ")"; })
+                        .style("cursor", "pointer");
+
+                    node.append("title")
+                        .text(function (d) { return d.className + ": " + format(d.value); });
+
+                    node.append("circle")
+                        .attr("r", function (d) { return d.r; })
+                        .style("fill", self.randomColour());
+
+                    node.append("text")
+                                    .attr("dy", "0em")
+                                    .style("text-anchor", "middle")
+                                    .style("font-weight", "bold")
+                                    .style("font-size", "18px")
+                                    .style("color", "#525252")
+                                    .text(function (d) { return d.className });
+
+                    node.append("text")
+                        .attr("dy", "1.5em")
+                        .style("text-anchor", "middle")
+                        .style("color", "#525252")
+                        .text(function (d) { return d.category });
+
+                    // Returns a flattened hierarchy containing all leaf nodes under the root.
+                    function classes(root) {
+                        var classes = [];
+
+                        function recurse(name, node) {
+                            if (node.children) node.children.forEach(function (child) { recurse(node.name, child); });
+                            else classes.push({ packageName: name, className: node.name, category: node.category, value: node.size, id: node._id });
+                        }
+
+                        recurse(null, root);
+                        return { children: classes };
+                    }
+
+                    d3.select(self.frameElement).style("height", diameter + "px");
+                }
+
+                $("#personLikes").empty();
+                $("#personDislikes").empty();
+
+                if (self.viewPersonLikes().length > 0) {
+                    $("#personLikes").append("<h1>Likes</h1>");
+                    for (var i = 0; i < self.viewPersonLikes().length; i++) {
+                        $("#personLikes").append("<div>" + self.viewPersonLikes()[i] + "</div>");
+                    };
+                } else {
+                    $("#personLikes").append("<h1>Likes</h1>");
+                    $("#personLikes").append("<div>None given</div>");
+                }
+
+                if (self.viewPersonDislikes().length > 0) {
+                    $("#personLikes").append("<h1>Dislikes</h1>");
+                    for (var i = 0; i < self.viewPersonDislikes().length; i++) {
+                        $("#personDislikes").append("<div>" + self.viewPersonDislikes()[i] + "</div>");
+                    };
+                } else {
+                    $("#personLikes").append("<h1>Dislikes</h1>");
+                    $("#personDislikes").append("<div>None given</div>");
+                }
+
+            }
+        };
+
+        if (searchQuery) {
+            queryPeople(searchQuery, callbackFunc);
+        } else if (personName) {
+            queryPeople({ _id: personName }, callbackFunc);
+        } else {
+            queryPeople(undefined, callbackFunc);
+        }
 
 
         $.getJSON("/action/get/people?_id=56ee3bb368680fb806250aba", function (data) {
