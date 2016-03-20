@@ -252,13 +252,13 @@ function AppViewModel() {
             var employeeNo = $.getJSON("/action/count/people?location.$id=" + self.viewLocationID(), function (data) {
                 window.bodgeShowPeople = function () {
                     self.showPeople(undefined, { 'location': self.viewLocationName() });
-                    self.displaySection('showPeople');
+                    self.displaySection('people');
                 };
                 self.viewLocationEmployeesNo('<a onclick="bodgeShowPeople();"><i class="fa fa-users"></i>  ' + data.result + ' employees</a>');
                 
             });
 
-            var locationMales = $.getJSON("/action/count/people?gender=male&location.$id=" + self.viewLocationID(), function (data) {
+            var locationMales = $.getJSON("/action/count/people?gender=Male&location.$id=" + self.viewLocationID(), function (data) {
                 self.viewLocationMales(data.result);
 
                 genderdata.push({
@@ -341,8 +341,9 @@ function AppViewModel() {
                 .text(function (d) { return d.className + ": " + format(d.value); });
 
             node.append("circle")
-                .attr("r", function (d) { return d.r; })
-                .style("fill", self.randomColour());
+                            .attr("r", function (d) { return d.r; })
+                            .attr("class", function (d) { return "bubble" + (d.id.length % 5 + 1); })
+                            .style("fill", "#333");
 
             node.append("text")
                 .attr("dy", "0em")
@@ -393,11 +394,14 @@ function AppViewModel() {
                         .text(function (d) { return d.className + ": " + format(d.value); });
 
                     node.append("circle")
-                        .attr("r", function (d) { return d.r; })
-                        .style("fill", self.randomColour());
+                                    .attr("r", function (d) { return d.r; })
+                                    .attr("class", function (d) { return "bubble" + (d.id.length % 5 + 1); })
+                                    .style("fill", "#333");
 
                     node.append("text")
                         .attr("dy", ".3em")
+                        .style("font-size", "18px")
+                        .style("font-weight", "bold")
                         .style("text-anchor", "middle")
                         .text(function (d) { return d.className; });
 
@@ -557,14 +561,13 @@ function AppViewModel() {
                 // Just the one peep
 
                 self.displaySection("person");
-                self.viewPersonName(data.result[0].firstname + " " + data.result[0].lastname);
-                self.viewPersonLocation(data.result[0].location.address);
-                self.viewPersonDepartment(data.result[0].department.name);
-                self.viewPersonRoom(data.result[0].room);
-                self.viewPersonEmail(data.result[0].email);
-                self.viewPersonPhone(data.result[0].phone);
-                self.viewPersonFax(data.result[0].fax);
-                self.viewPersonRank(data.result[0].rank);
+                self.viewPersonName('<i class="fa fa-user"></i> ' + data.result[0].firstname + " " + data.result[0].lastname);
+                self.viewPersonLocation('<i class="fa fa-building"></i> ' + data.result[0].location.address);
+                self.viewPersonDepartment('<i class="fa fa-folder"></i> ' + data.result[0].department.name);
+                self.viewPersonRoom('<i class="fa fa-home"></i> ' + data.result[0].room);
+                self.viewPersonEmail('<i class="fa fa-envelope"></i> ' + data.result[0].email);
+                self.viewPersonPhone('<i class="fa fa-phone"></i> ' + data.result[0].phone);
+                self.viewPersonRank('<i class="fa fa-clipboard"></i> ' + data.result[0].rank);
                 self.viewPersonSkills(data.result[0].skills);
 
                 self.viewPersonLikes(data.result[0].likes);
@@ -618,8 +621,9 @@ function AppViewModel() {
                         .text(function (d) { return d.className + ": " + format(d.value); });
 
                     node.append("circle")
-                        .attr("r", function (d) { return d.r; })
-                        .style("fill", self.randomColour());
+                                    .attr("r", function (d) { return d.r; })
+                                    .attr("class", function (d) { return "bubble" + (d.id.length % 5 + 1); })
+                                    .style("fill", "#333");
 
                     node.append("text")
                                     .attr("dy", "0em")
@@ -655,7 +659,7 @@ function AppViewModel() {
                 $("#personDislikes").empty();
 
                 if (self.viewPersonLikes().length > 0) {
-                    $("#personLikes").append("<h1>Likes</h1>");
+                    $("#personLikes").append("<h1><i style='color: #000' class='fa fa-thumbs-up'></i> Likes</h1>");
                     for (var i = 0; i < self.viewPersonLikes().length; i++) {
                         $("#personLikes").append("<div>" + self.viewPersonLikes()[i] + "</div>");
                     };
@@ -665,7 +669,7 @@ function AppViewModel() {
                 }
 
                 if (self.viewPersonDislikes().length > 0) {
-                    $("#personLikes").append("<h1>Dislikes</h1>");
+                    $("#personLikes").append("<h1><i style='color: #000' class='fa fa-thumbs-down'></i> Dislikes</h1>");
                     for (var i = 0; i < self.viewPersonDislikes().length; i++) {
                         $("#personDislikes").append("<div>" + self.viewPersonDislikes()[i] + "</div>");
                     };
@@ -674,6 +678,60 @@ function AppViewModel() {
                     $("#personDislikes").append("<div>None given</div>");
                 }
 
+                $.getJSON("/action/get/people?_id=" + data.result[0]._id, function (data) {
+                    var happinessArray = [];
+                    var workloadArray = [];
+                    var commentArray = [];
+                    var datesArray = [];
+
+                    $("#happinessComments").empty();
+
+                    for (var i = 0; i < data.result[0].commentDate.length; i++) {
+                        happinessArray.push(data.result[0].happiness[i]);
+                        workloadArray.push(data.result[0].workload[i]);
+                        commentArray.push(data.result[0].comments[i]);
+                        datesArray.push(data.result[0].commentDate[i]);
+
+                        $("#happinessComments").append("<h2>" + data.result[0].commentDate[i] + "</h2><div>" + data.result[0].comments[i] + "</div>");
+                    };
+
+                    console.log(happinessArray, workloadArray, datesArray);
+
+                    var data = {
+                        labels: datesArray,
+                        datasets: [
+                            {
+                                label: "Happiness",
+                                fillColor: "rgba(220,220,220,0.2)",
+                                strokeColor: "rgba(220,220,220,1)",
+                                pointColor: "rgba(220,220,220,1)",
+                                pointStrokeColor: "#fff",
+                                pointHighlightFill: "#fff",
+                                pointHighlightStroke: "rgba(220,220,220,1)",
+                                data: happinessArray
+                            },
+                            {
+                                label: "Workload",
+                                fillColor: "rgba(151,187,205,0.2)",
+                                strokeColor: "rgba(151,187,205,1)",
+                                pointColor: "rgba(151,187,205,1)",
+                                pointStrokeColor: "#fff",
+                                pointHighlightFill: "#fff",
+                                pointHighlightStroke: "rgba(151,187,205,1)",
+                                data: workloadArray
+                            }
+                        ],
+                    };
+
+                    var options = {
+                        responsive: true
+                    };
+
+                    var ctx = $("#happinessChart").get(0).getContext("2d");
+
+                    var myLineChart = new Chart(ctx).Line(data, options);
+
+                });
             }
         };
 
@@ -685,63 +743,6 @@ function AppViewModel() {
             queryPeople(undefined, callbackFunc);
         }
 
-
-        $.getJSON("/action/get/people?_id=56ee3bb368680fb806250aba", function (data) {
-            var happinessArray = [];
-            var workloadArray = [];
-            var commentArray = [];
-            var datesArray = [];
-
-            $("#happinessComments").empty();
-
-            for (var i = 0; i < data.result[0].commentDate.length; i++) {
-                happinessArray.push(data.result[0].happiness[i]);
-                workloadArray.push(data.result[0].workload[i]);
-                commentArray.push(data.result[0].comments[i]);
-                datesArray.push(data.result[0].commentDate[i]);
-
-                $("#happinessComments").append("<h2>" + data.result[0].commentDate[i] + "</h2><div>" + data.result[0].comments[i] + "</div>");
-
-            };
-
-            var data = {
-                labels: datesArray,
-                datasets: [
-                    {
-                        label: "Happiness",
-                        fillColor: "rgba(220,220,220,0.2)",
-                        strokeColor: "rgba(220,220,220,1)",
-                        pointColor: "rgba(220,220,220,1)",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "#fff",
-                        pointHighlightStroke: "rgba(220,220,220,1)",
-                        data: happinessArray
-                    },
-                    {
-                        label: "Workload",
-                        fillColor: "rgba(151,187,205,0.2)",
-                        strokeColor: "rgba(151,187,205,1)",
-                        pointColor: "rgba(151,187,205,1)",
-                        pointStrokeColor: "#fff",
-                        pointHighlightFill: "#fff",
-                        pointHighlightStroke: "rgba(151,187,205,1)",
-                        data: workloadArray
-                    }
-                ],
-                comments: commentArray
-            };
-
-            var options = {
-                responsive: true,
-                legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].strokeColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%><%if(comments[i]){%><%=comments[i]%><%}%></li><%}%></ul>"
-            };
-            
-            var ctx = $("#happinessChart").get(0).getContext("2d");
-
-            var myLineChart = new Chart(ctx).Line(data,options);
-
-
-        });
     };
 
 

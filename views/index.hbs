@@ -133,7 +133,7 @@
         </div>
 
         <div data-bind="visible: (displaySection() == 'people')" style="padding:20px" id="peopleContainer" class="row">
-            <label for="people-search-firstname">Firstname:</label> <input type="text" id="people-search-firstname" />
+            <label for="people-search-firstname">Firstname:</label> <input type="text" id="people-search-firstname" /> <button data-bind="click: function(){ doPeopleSearch(); }">Search</button>
             <div class="col-sm-12" id="peopleTiles">
 
             </div>
@@ -164,7 +164,7 @@
 
             <label class="col-sm-6 col-md-6">
                 Happiness vs Workload<br />
-                <canvas id="happinessChart" height="250"></canvas>
+                <canvas id="happinessChart" height="250" width="250"></canvas>
             </label>
 
             <div id="happinessComments" class="col-sm-6 col-md-6" style="height: 524px; overflow: auto;"></div>

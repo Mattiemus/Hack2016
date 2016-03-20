@@ -69,7 +69,7 @@ a {
     color: #525252;
 }
 
-#locationData .fa {
+#locationData .fa, #personDetails .fa {
     color: #525252;
 }
 
@@ -90,4 +90,20 @@ label {
 
 canvas {
     margin-top: 10px;
+}
+
+.bubble1 {
+  fill: #4d9de0 !important;
+}
+.bubble2 {
+  fill: #e15554 !important;
+}
+.bubble3 {
+  fill: #e1bc29 !important;
+}
+.bubble4 {
+  fill: #3bb273 !important;
+}
+.bubble5 {
+  fill: #7768ae !important;
 }
