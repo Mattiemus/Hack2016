@@ -17,7 +17,11 @@ router.get('/edit', function(req, res, next) {
                 fields: [
                     { name: 'name' },
                     { name: 'longitude' },
-                    { name: 'latitude' }
+                    { name: 'latitude' },
+                    { name: 'phone' },
+                    { name: 'fax' },
+                    { name: 'email' },
+                    { name: 'address' }
                 ]
             },
             {
@@ -39,8 +43,13 @@ router.get('/edit', function(req, res, next) {
                 fields: [
                     { name: 'firstname' },
                     { name: 'lastname' },
+                    { name: 'gender' },
                     { name: 'phone' },
+                    { name: 'email' },
                     { name: 'room' },
+                    { name: 'rank' },
+                    { name: 'salary' },
+                    { name: 'reviewDate' },
                     { name: 'department' },
                     { name: 'location' },
                     { name: 'skills', isArray: true },

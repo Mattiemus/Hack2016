@@ -293,7 +293,11 @@ function createRouter(collectionName, fields) {
 createRouter('locations', {
     name: {},
     longitude: {},
-    latitude: {}
+    latitude: {},
+    phone: {},
+    fax: {},
+    email: {},
+    address: {}
 });
 
 // Departments router
@@ -312,8 +316,13 @@ createRouter('skills', {
 createRouter('people', {
     firstname: {},
     lastname: {},
+    gender: {},
     phone: {},
+    email: {},
     room: {},
+    rank: {},
+    salary: {},
+    reviewDate: {},
     department: { refToo: 'departments' },
     location: { refToo: 'locations' },
     skills: { refToo: 'skills', isArray: true }
