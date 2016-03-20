@@ -109,6 +109,15 @@ function createRouter(collectionName, fields) {
                     // Add the resulting document
                     result.push(doc);
 
+                    // Bodge fix to DBRefs being nested
+                    function getOid(ref) {
+                        if (ref.oid._bsontype == 'DBRef') {
+                            return getOid(ref.oid);
+                        } else {
+                            return ref.oid;
+                        }
+                    }
+
                     // Grab references
                     for(var fieldName in fields) {
                         if(fields[fieldName].refToo) {
@@ -139,7 +148,7 @@ function createRouter(collectionName, fields) {
                                                   });
                                             }
                                         });
-                                    })(fieldName, i, req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(doc[fieldName][i].oid) }));
+                                    })(fieldName, i, req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(getOid(doc[fieldName][i])) }));
                                 }
                             } else {
                                 // Query for the referenced field
@@ -167,7 +176,7 @@ function createRouter(collectionName, fields) {
                                             });
                                         }
                                     });
-                                })(fieldName, req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(doc[fieldName].oid) }));
+                                })(fieldName, req.db.collection(fields[fieldName].refToo).find({ _id: mongodb.ObjectId(getOid(doc[fieldName])) }));
                             }
                         }
                     }
@@ -242,7 +251,7 @@ function createRouter(collectionName, fields) {
 
                         if(fields[fieldName].refToo) {
                             req.body[fieldName] = new mongodb.DBRef(fields[fieldName].refToo,
-                              new mongodb.ObjectId(req.body[fieldName]));
+                              req.body[fieldName]);
                         }
                     }
 
