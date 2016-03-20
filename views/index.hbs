@@ -42,15 +42,55 @@
     <div data-bind="visible: (displaySection() == 'location')" id="locationContainer">
         <div data-bind="visible: viewMap()" id="mapid"></div>
         <div data-bind="visible: viewMap() == false" id="locationData">
-            <h1 data-bind="text: viewLocationName" style="font-size: 40px"></h1>
-            <hr />
-            <h3 data-bind="" style="font-size: 23px">Head of Office - Paula Besson</h3>
-            <h3 data-bind="text: viewLocationEmployeesNo() + ' Employees'" style="font-size: 23px"></h3>
+            <div id="locationName" style="font-size: 40px; width: 45%; float: left;">
+                <h1 data-bind="text: viewLocationName()"></h1>
+                <h3 data-bind="text: viewLocationEmployeesNo() + ' Employees'" style="font-size: 23px"></h3>
+            </div>
+            <div id="locationAddress" style="font-size: 20px; width: 45%; float: right; padding-bottom: 20px;">
+                <div data-bind="text: 'Phone: ' + viewLocationPhone()"></div>
+                <div data-bind="text: 'Fax: ' + viewLocationFax()"></div>
+                <div data-bind="text: 'Email: ' + viewLocationEmail()"></div>
+                <div data-bind="text: viewLocationAddress()"></div>
+            </div>
+            <hr style="width: 100%"/>
 
             <br />
 
-            <canvas id="myChart" width="400" height="400"></canvas>
-        </div>
+            <label>
+                Gender Split<br />
+                <canvas id="genderChart" width="250" height="250"></canvas>
+            </label>
+
+            <label>
+                Skills Breakdown<br />
+                <canvas id="skillsChart" width="250" height="250"></canvas>
+            </label>
+
+            <label>
+                Department Sizes<br />
+                <canvas id="departmentChart" width="250" height="250"></canvas>
+            </label>
+
+            <br />
+            <br />
+
+            <div id="progress" style="width: 45%; float: left;">
+                <div class="progress-bar-label">Average Staff Happiness</div>
+                <div class="progress" id="happiness-progress">
+                    <div class="progress-bar" role="progressbar" data-bind="style: {width: viewLocationHappiness() + '%'}, text: viewLocationHappiness() + '%'">
+                    </div>
+                </div>
+            </div>
+
+                <div id="workload" style="width: 45%; float: right;">
+                    <div class="progress-bar-label">Average Staff Workload</div>
+                    <div class="progress" id="workload-progress">
+                        <div class="progress-bar" role="progressbar" data-bind="style: {width: viewLocationHappiness() + '%'}, text: viewLocationHappiness() + '%'">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
     </div>
 
     <div data-bind="visible: (displaySection() == 'skills')" id="skillsContainer">skills</div>
