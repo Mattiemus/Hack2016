@@ -125,10 +125,50 @@
         </div>
 
         <div data-bind="visible: (displaySection() == 'skills')" id="skillsContainer">
-            <div id="skillBubbles"></div>
+            <div id="skillBubbles" style="text-align: center;"></div>
         </div>
 
-        <div data-bind="visible: (displaySection() == 'people')" id="peopleContainer">people</div>
+        <div data-bind="visible: (displaySection() == 'peopleSkills')" id="peopleSkillsContainer">
+            <div id="peopleSkillBubbles" style="text-align: center;"></div>
+        </div>
+
+        <div data-bind="visible: (displaySection() == 'people')" style="padding:20px" id="peopleContainer" class="row">
+            <div class="col-sm-12" id="peopleTiles">
+
+            </div>
+        </div>
+
+        <div data-bind="visible: (displaySection() == 'person')" style="padding:20px" id="personContainer" class="row">
+            <div id="personImage" style="font-size: 40px; width: 45%; float: left; text-align: center;">
+                <img src="" style="cursor: pointer;" height="200" width="200" data-bind="attr: { src: viewPersonURL }">
+            </div>
+            <div id="personDetails" style="font-size: 20px; width: 45%; float: right; padding-bottom: 20px;">
+                <h1 data-bind="html: viewPersonName()"></h1>
+                <div data-bind="html: viewPersonDepartment()"></div>
+                <div data-bind="html: viewPersonLocation()"></div>
+                <div data-bind="html: viewPersonRank()"></div>
+                <div data-bind="html: viewPersonEmail()"></div>
+                <div data-bind="html: viewPersonPhone()"></div>
+            </div>
+            <hr style="width: 100%" />
+            
+            <div id="personSkillBubbles" class="col-sm-12 col-md-6" style="text-align: center;"></div>
+
+            <div id="personLikesDislikes" class="col-sm-12 col-md-6" style="height: 400px;">
+                <div id="personLikes">
+                </div>
+                <div id="personDislikes">
+                </div>
+            </div>
+
+            <label class="col-sm-6 col-md-6">
+                Happiness vs Workload<br />
+                <canvas id="happinessChart" height="250"></canvas>
+            </label>
+
+            <div id="happinessComments" class="col-sm-6 col-md-6" style="height: 524px; overflow: auto;"></div>
+        </div>
+
     </div>
 
 
