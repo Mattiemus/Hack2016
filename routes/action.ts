@@ -119,8 +119,8 @@ function createRouter(collectionName, fields) {
                                     ((fieldNameCpy, iCpy, myCursor) => {
                                         myCursor.each((err, refDoc) => {
                                             // Set the referenced value
+                                            recordsGrabbingRefs--;
                                             if(err == null && refDoc != null) {
-                                                recordsGrabbingRefs--;
                                                 doc[fieldNameCpy][iCpy] = refDoc;
                                             }
 
@@ -141,8 +141,8 @@ function createRouter(collectionName, fields) {
                                 ((fieldNameCpy, myCursor) => {
                                     myCursor.each((err, refDoc) => {
                                         // Set the referenced value
+                                        recordsGrabbingRefs--;
                                         if(err == null && refDoc != null) {
-                                            recordsGrabbingRefs--;
                                             doc[fieldNameCpy] = refDoc;
                                         }
 
