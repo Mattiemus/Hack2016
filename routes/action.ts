@@ -85,7 +85,7 @@ function createRouter(collectionName, fields) {
         // Build a query from the request
         var query = url.parse(req.url, true).query;
         for (var fieldName in query) {
-            if(fieldName == '_id') {
+            if(fieldName.endsWith('id')) {
                 query[fieldName] = new mongodb.ObjectId(query[fieldName]);
             }
         }
@@ -119,9 +119,12 @@ function createRouter(collectionName, fields) {
                                     ((fieldNameCpy, iCpy, myCursor) => {
                                         myCursor.each((err, refDoc) => {
                                             // Set the referenced value
-                                            recordsGrabbingRefs--;
                                             if(err == null && refDoc != null) {
                                                 doc[fieldNameCpy][iCpy] = refDoc;
+                                                recordsGrabbingRefs--;
+                                            }
+                                            if(err != null) {
+                                                recordsGrabbingRefs--;
                                             }
 
                                             // If we have all the fields, send the response!
@@ -141,9 +144,12 @@ function createRouter(collectionName, fields) {
                                 ((fieldNameCpy, myCursor) => {
                                     myCursor.each((err, refDoc) => {
                                         // Set the referenced value
-                                        recordsGrabbingRefs--;
                                         if(err == null && refDoc != null) {
                                             doc[fieldNameCpy] = refDoc;
+                                            recordsGrabbingRefs--;
+                                        }
+                                        if(err != null) {
+                                            recordsGrabbingRefs--;
                                         }
 
                                         // If we have all the fields, send the response!

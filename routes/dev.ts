@@ -4,6 +4,11 @@ import express = require('express');
 var router = express.Router();
 
 /* GET error. */
+router.get('/matt', function(req, res, next) {
+    res.render('matts');
+});
+
+/* GET error. */
 router.get('/error', function(req, res, next) {
     throw new Error('Testing error system');
 });
