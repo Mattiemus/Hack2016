@@ -17,10 +17,17 @@ function AppViewModel() {
 
         self.viewLocationID = ko.observable();
         self.viewLocationName = ko.observable();
-        self.viewLocationDesc = ko.observable();
+        self.viewLocationPhone = ko.observable();
+        self.viewLocationFax = ko.observable();
+        self.viewLocationEmail = ko.observable();
+        self.viewLocationAddress = ko.observable();
+        self.viewLocationMales = ko.observable();
+        self.viewLocationFemales = ko.observable();
+        self.viewLocationNAs = ko.observable();
         self.viewLocationEmployeesNo = ko.observable();
-        self.viewLocationCEO = ko.observable();
-        self.viewLocationsDepartments = ko.observableArray();
+        
+        self.viewLocationHappiness = ko.observable();
+        self.viewLocationWorkload = ko.observable();
 
         self.clickLocation = function () {
             self.viewMap(true);
@@ -84,47 +91,153 @@ function AppViewModel() {
             self.displaySection('people');
         }
 
-
         self.loadLocation = function () {
             self.viewMap(false);
+            var genderdata = [];
+            var skillsdata = {};
+            var departmentdata = [];
             var locationID = $.getJSON("/action/get/locations?latitude=" + self.locationArray()[0] + "&longitude=" + self.locationArray()[1], function (data) {
                 self.viewLocationID(data.result[0]._id);
                 self.viewLocationName(data.result[0].name);
+                self.viewLocationPhone(data.result[0].phone);
+                self.viewLocationFax(data.result[0].fax);
+                self.viewLocationAddress(data.result[0].address);
+                self.viewLocationEmail(data.result[0].email);
                 
-                var employeeNo = $.getJSON("/action/query/employeecount?locationId=" + self.viewLocationID(), function (data) {
+                var happiness = $.getJSON("action/get/people?location.$id=" + self.viewLocationID(), function (data) {
+                    var happinessTotal = 0;
+
+                    for (var i = 0; i < data.result.length; i++) {
+                        happinessTotal += data.result[i].happiness * 100;
+                    }
+
+                    self.viewLocationHappiness(happinessTotal / data.result.length);
+                });
+
+                var workload = $.getJSON("action/get/people?location.$id=" + self.viewLocationID(), function (data) {
+                    var workloadTotal = 0;
+
+                    for (var i = 0; i < data.result.length; i++) {
+                        workloadTotal += data.result[i].workload * 100;
+                    }
+
+                    self.viewLocationWorkload(workloadTotal / data.result.length);
+                });
+
+                var departments = $.getJSON("/action/get/people?location.$id=" + self.viewLocationID(), function (data) {
+                    var departmentsArray = [];
+                    for (var i = 0; i < data.result.length; i++) {
+                        departmentsArray.push(data.result[i].department);
+                        departmentsArray.concat();
+                    }
+
+                    var merged = [].concat.apply([], departmentsArray);
+
+                    var hist = {};
+                    merged.map(function (a) { if (a.name in hist) hist[a.name]++; else hist[a.name] = 1; });
+
+                    for (var histname in hist) {
+                            departmentdata.push({
+                                value: hist[histname],
+                                color: "#4D9DE0",
+                                highlight: "#FF5A5E",
+                                label: histname
+                             });
+                    };
+
+                    var ctx = $("#departmentChart").get(0).getContext("2d");
+                    var departmentPieChart = new Chart(ctx).Pie(departmentdata);
+                });
+
+                var skills = $.getJSON("/action/get/people?location.$id=" + self.viewLocationID(), function (data) {
+                    var skillsArr = [];
+                    for (var i = 0; i < data.result.length; i++) {
+                        skillsArr.push(data.result[i].skills);
+                        skillsArr.concat();
+                    }
+
+                    var merged = [].concat.apply([], skillsArr);
+
+                    var hist = {};
+                    merged.map(function (a) { if (a.name in hist) hist[a.name]++; else hist[a.name] = 1; });
+
+                    
+                    var skillsNameArray = [];
+                    for (var histname in hist) {
+                        skillsNameArray.push(histname);
+                    }
+
+                    var skillsCountArray = [];
+                    for (var histname in hist) {
+                        skillsCountArray.push(hist[histname]);
+                    }
+
+                    skillsdata.labels = skillsNameArray;
+                    skillsdata.datasets = [{
+                        label: "Skills Data",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(220,220,220,1)",
+                        pointColor: "rgba(220,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: skillsCountArray
+                    }];
+
+                    
+                    var ctx = $("#skillsChart").get(0).getContext("2d");
+                    var skillsChart = new Chart(ctx).Radar(skillsdata);
+                });
+
+
+
+                var employeeNo = $.getJSON("/action/count/people?location.$id=" + self.viewLocationID(), function (data) {
                     self.viewLocationEmployeesNo(data.result);
                 });
-            });
-           
-                var data = [
-                    {
-                        value: 300,
-                        color: "#F7464A",
+
+                var locationMales = $.getJSON("/action/count/people?gender=male&location.$id=" + self.viewLocationID(), function (data) {
+                    self.viewLocationMales(data.result);
+
+                    genderdata.push({
+                        value: self.viewLocationMales(),
+                        color: "#4D9DE0",
                         highlight: "#FF5A5E",
-                        label: "Red"
-                    },
-                    {
-                        value: 50,
-                        color: "#46BFBD",
-                        highlight: "#5AD3D1",
-                        label: "Green"
-                    },
-                    {
-                        value: 100,
-                        color: "#FDB45C",
-                        highlight: "#FFC870",
-                        label: "Yellow"
-                    }
-                ];
+                        label: "Male"
+                    });
 
-                var options = {
-                    //String - A legend template
-                    legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>"
-                };
+                    var locationFemales = $.getJSON("/action/count/people?gender=female&location.$id=" + self.viewLocationID(), function (data) {
+                        self.viewLocationFemales(data.result);
+
+                        genderdata.push({
+                            value: self.viewLocationFemales(),
+                            color: "#E1BC29",
+                            highlight: "#FF5A5E",
+                            label: "Female"
+                        });
+
+                        var locationNAs = $.getJSON("/action/count/people?gender=na&location.$id=" + self.viewLocationID(), function (data) {
+                            self.viewLocationNAs(data.result);
+
+                            genderdata.push({
+                                value: self.viewLocationNAs(),
+                                color: "#F7464A",
+                                highlight: "#FF5A5E",
+                                label: "None applicable/Prefer not to say"
+                            });
+
+                            var options = {
+                                //String - A legend template
+                                legendTemplate: "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<segments.length; i++){%><li><span style=\"background-color:<%=segments[i].fillColor%>\"></span><%if(segments[i].label){%><%=segments[i].label%><%}%></li><%}%></ul>"
+                            };
 
 
-                var ctx = $("#myChart").get(0).getContext("2d");
-                var myPieChart = new Chart(ctx).Pie(data, options);
+                            var ctx = $("#genderChart").get(0).getContext("2d");
+                            var genderPieChart = new Chart(ctx).Pie(genderdata, options);
+
+                        });
+                    });
+                });
+            });
 
         }
 
